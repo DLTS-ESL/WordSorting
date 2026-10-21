@@ -5,548 +5,380 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ESL Vocabulary Word Board</title>
-
 <style>
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
     padding: 20px;
-    font-family: Arial, sans-serif;
-    background: #f8f7fc;
-    color: #333;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fc;
+    color: #243047;
   }
 
   h1 {
     text-align: center;
-    color: #66558f;
-    margin: 5px 0 8px;
-  }
-
-  .subtitle {
-    text-align: center;
-    color: #777;
+    font-size: 36px;
     margin: 0 0 18px;
+    color: #294b80;
   }
 
   .controls {
-    max-width: 1200px;
-    margin: 0 auto 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  textarea, input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #ddd5f2;
-    border-radius: 12px;
-    font-size: 15px;
-    font-family: inherit;
     background: white;
+    padding: 18px;
+    border-radius: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 12px #0000000d;
   }
 
   textarea {
-    min-height: 100px;
+    width: 100%;
+    min-height: 90px;
+    padding: 14px;
+    font: 20px Arial, sans-serif;
+    border: 2px solid #cbd6e8;
+    border-radius: 12px;
     resize: vertical;
   }
 
-  .buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
   button {
-    border: none;
-    border-radius: 11px;
-    padding: 11px 16px;
-    font-size: 14px;
+    padding: 13px 20px;
+    margin: 10px 8px 0 0;
+    border: 0;
+    border-radius: 12px;
+    font-size: 19px;
     font-weight: bold;
     cursor: pointer;
-    background: #e4dcfb;
-    color: #44346e;
+    background: #3869b3;
+    color: white;
   }
 
-  button:hover {
-    filter: brightness(.97);
-  }
+  button:hover { background: #28518f; }
 
-  .create-btn {
-    background: #bdebdc;
-    color: #245b4a;
-  }
-
-  .clear-btn {
-    background: #ffd9dc;
-    color: #8b3d48;
+  .help {
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 10px 0 0;
+    color: #56657a;
   }
 
   /* Definition panel */
   .definition-panel {
-    display: none;
-    max-width: 1200px;
-    margin: 0 auto 18px;
-    padding: 18px;
-    background: #fff;
-    border: 2px solid #d9cdfa;
-    border-radius: 18px;
-    box-shadow: 0 4px 12px rgba(50, 40, 70, .08);
-  }
-
-  .definition-panel.visible {
-    display: block;
-  }
-
-  .definition-heading {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.8fr) minmax(0, 2fr);
+    gap: 18px;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    background: #fff4cc;
+    border: 3px solid #f0cf65;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+    min-height: 125px;
   }
 
-  .definition-heading h2 {
-    margin: 0;
-    color: #66558f;
-    font-size: 23px;
+  .definition-word {
+    font-size: 30px;
+    font-weight: 800;
+    color: #80530b;
     overflow-wrap: anywhere;
-  }
-
-  .close-btn {
-    background: #f0edf5;
-    flex-shrink: 0;
   }
 
   .definition-text {
-    font-size: 18px;
+    font-size: 23px;
     line-height: 1.5;
-    margin: 8px 0 14px;
     overflow-wrap: anywhere;
   }
 
-  .definition-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 10px;
+  .definition-hint {
+    color: #7b6b46;
+    font-size: 19px;
   }
 
-  .edit-area {
-    display: none;
-    margin-top: 12px;
-  }
-
-  .edit-area.visible {
-    display: block;
-  }
-
-  .edit-area textarea {
-    min-height: 80px;
-  }
-
-  .panel-hint {
-    font-size: 13px;
-    color: #777;
-    margin: 0;
-  }
-
-  /* Word board */
-  .board {
+  /* Free-movement board */
+  #board {
     position: relative;
-    width: 100%;
-    min-height: 650px;
-    border: 2px dashed #d8d0e8;
+    min-height: 600px;
+    height: 70vh;
+    overflow: auto;
+    background-color: #ffffff;
+    background-image: radial-gradient(#dbe3ef 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+    border: 3px solid #d5dfef;
     border-radius: 18px;
-    background-color: #fff;
-    background-image: radial-gradient(#e9e3f3 1px, transparent 1px);
-    background-size: 22px 22px;
-    overflow: hidden;
+    touch-action: pan-x pan-y;
   }
 
   .word-card {
     position: absolute;
+    left: 20px;
+    top: 20px;
     display: flex;
-    justify-content: center;
     align-items: center;
-    min-width: 110px;
-    min-height: 58px;
-    max-width: 240px;
-    padding: 14px 18px;
-    border-radius: 15px;
-    border: 2px solid rgba(80, 65, 110, .10);
-    box-shadow: 0 3px 7px rgba(50, 40, 70, .12);
-    font-size: 17px;
-    font-weight: bold;
+    justify-content: center;
+    min-width: 145px;
+    max-width: 290px;
+    min-height: 76px;
+    padding: 16px 22px;
+    border: 3px solid #b8c8e4;
+    border-radius: 17px;
+    background: #e7f0ff;
+    color: #19385f;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
     text-align: center;
     overflow-wrap: anywhere;
     cursor: grab;
     user-select: none;
+    box-shadow: 0 4px 8px #00000012;
     touch-action: none;
   }
 
-  .word-card:active {
-    cursor: grabbing;
-  }
+  .word-card:active { cursor: grabbing; }
 
   .word-card.selected {
-    outline: 3px solid #8570cb;
-    outline-offset: 2px;
+    border-color: #e4a521;
+    background: #fff0bd;
+    box-shadow: 0 0 0 4px #ffe8a2;
   }
 
-  .word-card.dragging {
-    z-index: 9999;
-    box-shadow: 0 8px 20px rgba(50, 40, 70, .22);
-  }
-
-  .hint {
-    margin: 12px 0 0;
-    text-align: center;
-    color: #777;
-    font-size: 14px;
-  }
-
-  @media print {
-    body {
-      background: white;
-      padding: 0;
-    }
-
-    h1, .subtitle, .controls, .hint,
-    .definition-actions, .edit-area, .close-btn {
-      display: none !important;
-    }
-
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    h1 { font-size: 29px; }
     .definition-panel {
-      display: block !important;
-      box-shadow: none;
+      grid-template-columns: 1fr;
+      gap: 8px;
     }
-
-    .board {
-      min-height: 90vh;
-      border: 1px solid #ccc;
-      background-image: none;
-    }
-
-    .word-card {
-      box-shadow: none;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
+    .definition-word { font-size: 27px; }
+    .definition-text { font-size: 21px; }
+    .word-card { font-size: 23px; }
+    #board { height: 65vh; }
   }
 </style>
 </head>
-
 <body>
-  <h1>ESL Vocabulary Word Board</h1>
-  <p class="subtitle">
-    Create word cards, drag them to make groups, and double-click a word to see its definition.
-  </p>
 
-  <div class="controls">
-    <textarea id="wordInput" placeholder="Paste vocabulary here, one word or phrase per line.
+<h1>ESL Vocabulary Word Board</h1>
 
-Example:
-effect
+<div class="controls">
+  <label for="words"><strong style="font-size:22px">Your vocabulary words</strong></label>
+  <p class="help">Enter one word or phrase per line. You can edit this list whenever you need.</p>
+  <textarea id="words">effect
 waste
 wind energy
 drought
+result
 air pollution
-electricity"></textarea>
-
-    <div class="buttons">
-      <button class="create-btn" onclick="createCards()">Create Word Cards</button>
-      <button onclick="arrangeCards()">Arrange Cards</button>
-      <button onclick="window.print()">Print Board</button>
-      <button class="clear-btn" onclick="clearBoard()">Clear Board</button>
-    </div>
-  </div>
-
-  <section id="definitionPanel" class="definition-panel" aria-live="polite">
-    <div class="definition-heading">
-      <h2 id="definitionWord">Word</h2>
-      <button class="close-btn" onclick="closeDefinition()">Close ✕</button>
-    </div>
-
-    <div id="definitionText" class="definition-text"></div>
-
-    <p class="panel-hint">
-      You can edit the definition to suit your students' English level.
-    </p>
-
-    <div class="definition-actions">
-      <button onclick="toggleEdit()">Edit Definition</button>
-    </div>
-
-    <div id="editArea" class="edit-area">
-      <textarea id="definitionInput" placeholder="Type a student-friendly definition..."></textarea>
-      <div class="definition-actions">
-        <button class="create-btn" onclick="saveDefinition()">Save Definition</button>
-        <button onclick="cancelEdit()">Cancel</button>
-      </div>
-    </div>
-  </section>
-
-  <div id="board" class="board"></div>
-
-  <p class="hint">
-    Double-click a word to view its definition. Drag cards freely to arrange your groups.
+electricity
+heavy rainfall
+consequence
+water pollution
+fossil fuels
+blocked drains
+damage
+natural resources
+recycle
+drainage
+conserve
+reuse
+reduce
+evacuate
+protect
+prevent
+generate
+renewable energy
+water supply
+energy</textarea>
+  <button id="createBtn">Create Word Cards</button>
+  <button id="clearBtn">Clear Board</button>
+  <p class="help">
+    <strong>How to use:</strong> Drag cards anywhere to group them.
+    Double-click a word to see its definition above the board.
+    No automatic snapping or grouping.
   </p>
+</div>
+
+<div class="definition-panel" aria-live="polite">
+  <div class="definition-word" id="definitionWord">Choose a word</div>
+  <div class="definition-text" id="definitionText">
+    <span class="definition-hint">Double-click any word card to display its definition here.</span>
+  </div>
+</div>
+
+<div id="board"></div>
 
 <script>
-  const board = document.getElementById("board");
-  const wordInput = document.getElementById("wordInput");
-  const definitionPanel = document.getElementById("definitionPanel");
-  const definitionWord = document.getElementById("definitionWord");
-  const definitionText = document.getElementById("definitionText");
-  const definitionInput = document.getElementById("definitionInput");
-  const editArea = document.getElementById("editArea");
+const definitions = {
+  "effect": "A change that happens because of an action or event.",
+  "waste": "To use more of something than necessary, or to use it carelessly.",
+  "wind energy": "Energy produced by using the movement of wind.",
+  "drought": "A long period with very little or no rain.",
+  "result": "Something that happens because of an action or event.",
+  "air pollution": "Harmful gases, smoke or particles that make the air dirty.",
+  "electricity": "A form of energy used to power lights, machines and devices.",
+  "heavy rainfall": "A large amount of rain falling in a short period.",
+  "consequence": "An effect or result of an action or decision.",
+  "water pollution": "The contamination of water by harmful substances or waste.",
+  "fossil fuels": "Coal, oil and natural gas formed from ancient living things. Burning them releases greenhouse gases.",
+  "blocked drains": "Drains that cannot carry water away properly because rubbish or other materials are stopping the flow.",
+  "damage": "Physical harm that makes something less useful, safe or effective.",
+  "natural resources": "Materials from nature that people use, such as water, forests, soil and minerals.",
+  "recycle": "To process used materials so they can be made into new products.",
+  "drainage": "The system or process that carries extra water away from an area.",
+  "conserve": "To protect something and use it carefully so it is not wasted.",
+  "reuse": "To use something again instead of throwing it away.",
+  "reduce": "To make something smaller in amount or use less of it.",
+  "evacuate": "To move people away from a dangerous place to somewhere safer.",
+  "protect": "To keep someone or something safe from harm.",
+  "prevent": "To stop something bad or unwanted from happening.",
+  "generate": "To produce or create something, such as electricity or energy.",
+  "renewable energy": "Energy from sources that naturally replenish, such as sunlight, wind and flowing water.",
+  "water supply": "The amount of water available for people, homes, farms and businesses.",
+  "energy": "The ability to do work or cause change; it can power movement, heat and electricity."
+};
 
-  const pastelColors = [
-    "#FCE1E4", "#DFF3E4", "#DDEBFA", "#FFF0C7",
-    "#EADFFA", "#FFE4CC", "#D8F3F0", "#F5DFF0",
-    "#E8EDC8", "#E3E0FF"
-  ];
+const board = document.getElementById("board");
+const wordInput = document.getElementById("words");
+const definitionWord = document.getElementById("definitionWord");
+const definitionText = document.getElementById("definitionText");
 
-  // Built-in definitions for the example vocabulary.
-  const definitions = {
-    "effect": "A change that happens because of an action or event.",
-    "result": "Something that happens because of an action or event.",
-    "consequence": "Something that happens as a result of an action, often an important result.",
-    "damage": "Harm that makes something less useful, safe, or healthy.",
-    "conserve": "To use something carefully and avoid wasting it.",
-    "protect": "To keep someone or something safe from harm.",
-    "prevent": "To stop something from happening.",
-    "waste": "To use more of something than needed, or to use it carelessly.",
-    "air pollution": "Harmful gases, smoke, or particles that make the air dirty.",
-    "water pollution": "Harmful substances that make water dirty or unsafe.",
-    "natural resources": "Materials from nature that people use, such as water, trees, and minerals.",
-    "wind energy": "Energy made by using the power of moving air.",
-    "electricity": "A form of energy that powers lights, machines, and devices.",
-    "fossil fuels": "Fuels such as coal, oil, and natural gas that formed over millions of years.",
-    "recycle": "To process used materials so they can be made into new products.",
-    "reuse": "To use something again instead of throwing it away.",
-    "reduce": "To use less of something or make the amount smaller.",
-    "renewable energy": "Energy from sources that naturally replace themselves, such as sunlight and wind.",
-    "heavy rainfall": "A large amount of rain falling in a short period of time.",
-    "drought": "A long period with little or no rain, causing a shortage of water.",
-    "blocked drains": "Drains that cannot carry water away because something is stopping the flow.",
-    "drainage": "A system that carries extra water away from an area.",
-    "evacuate": "To leave a dangerous place and move to a safer place.",
-    "water supply": "The water available for people to use.",
-    "generate": "To produce or make something, such as electricity or energy."
-  };
+let selectedCard = null;
+let highestZ = 1;
 
-  let currentWord = "";
-  let selectedCard = null;
+function normalize(word) {
+  return word.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
-  function normalize(word) {
-    return word.trim().toLowerCase();
-  }
+function showDefinition(word, card) {
+  const key = normalize(word);
+  definitionWord.textContent = word;
+  definitionText.textContent =
+    definitions[key] || "No definition has been added for this word yet.";
 
-  function createCards() {
-    const words = wordInput.value
-      .split(/\n/)
-      .map(word => word.trim())
-      .filter(word => word.length > 0);
+  if (selectedCard) selectedCard.classList.remove("selected");
+  selectedCard = card;
+  if (selectedCard) selectedCard.classList.add("selected");
+}
 
-    if (words.length === 0) {
-      alert("Please paste some vocabulary words first.");
-      return;
+function makeDraggable(card) {
+  let startX = 0, startY = 0;
+  let originalX = 0, originalY = 0;
+  let moved = false;
+  let dragging = false;
+
+  card.addEventListener("pointerdown", function(event) {
+    if (event.button !== 0 && event.pointerType === "mouse") return;
+
+    dragging = true;
+    moved = false;
+    startX = event.clientX;
+    startY = event.clientY;
+    originalX = card.offsetLeft;
+    originalY = card.offsetTop;
+    card.style.zIndex = ++highestZ;
+    card.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  card.addEventListener("pointermove", function(event) {
+    if (!dragging) return;
+
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+
+    if (moved) {
+      const maxX = Math.max(0, board.scrollWidth - card.offsetWidth);
+      const maxY = Math.max(0, board.scrollHeight - card.offsetHeight);
+      card.style.left = Math.max(0, Math.min(maxX, originalX + dx)) + "px";
+      card.style.top = Math.max(0, Math.min(maxY, originalY + dy)) + "px";
     }
+  });
 
-    board.innerHTML = "";
-    closeDefinition();
+  card.addEventListener("pointerup", function() {
+    dragging = false;
+  });
 
-    words.forEach((word, index) => {
-      const card = document.createElement("div");
-      card.className = "word-card";
-      card.textContent = word;
-      card.style.backgroundColor = pastelColors[index % pastelColors.length];
+  card.addEventListener("pointercancel", function() {
+    dragging = false;
+  });
 
-      board.appendChild(card);
+  // Double-click opens the definition. Single click does not.
+  card.addEventListener("dblclick", function(event) {
+    event.preventDefault();
+    showDefinition(card.dataset.word, card);
+  });
+}
 
-      // Initial card positions.
-      const column = index % 5;
-      const row = Math.floor(index / 5);
-      card.style.left = (20 + column * 200) + "px";
-      card.style.top = (20 + row * 95) + "px";
+function createCards() {
+  board.innerHTML = "";
+  selectedCard = null;
+  definitionWord.textContent = "Choose a word";
+  definitionText.innerHTML =
+    '<span class="definition-hint">Double-click any word card to display its definition here.</span>';
 
-      card.addEventListener("dblclick", function(event) {
-        // A double-click shows the definition, not a drag action.
-        event.preventDefault();
-        showDefinition(word, card);
-      });
+  const words = wordInput.value
+    .split(/\n/)
+    .map(w => w.trim())
+    .filter(Boolean);
 
-      makeDraggable(card);
-    });
+  const gap = 18;
+  let x = 18;
+  let y = 18;
+  let rowHeight = 100;
+  const boardWidth = Math.max(board.clientWidth, 320);
 
-    fitBoardHeight();
-  }
+  words.forEach((word, index) => {
+    const card = document.createElement("div");
+    card.className = "word-card";
+    card.textContent = word;
+    card.dataset.word = word;
+    card.style.zIndex = ++highestZ;
+    board.appendChild(card);
 
-  function showDefinition(word, card) {
-    currentWord = word;
-    selectedCard = card;
+    // Place cards initially in rows; after creation, move them freely.
+    card.style.left = x + "px";
+    card.style.top = y + "px";
 
-    document.querySelectorAll(".word-card").forEach(item => {
-      item.classList.remove("selected");
-    });
-    card.classList.add("selected");
+    makeDraggable(card);
 
-    definitionWord.textContent = word;
+    // Measure after insertion and position the next card.
+    const cardWidth = card.offsetWidth;
+    const cardHeight = card.offsetHeight;
 
-    const definition = definitions[normalize(word)];
-    definitionText.textContent = definition ||
-      "No definition has been added yet. Click “Edit Definition” to enter one.";
-
-    definitionInput.value = definition || "";
-    editArea.classList.remove("visible");
-    definitionPanel.classList.add("visible");
-  }
-
-  function closeDefinition() {
-    definitionPanel.classList.remove("visible");
-    editArea.classList.remove("visible");
-    document.querySelectorAll(".word-card").forEach(card => {
-      card.classList.remove("selected");
-    });
-    currentWord = "";
-    selectedCard = null;
-  }
-
-  function toggleEdit() {
-    if (!currentWord) return;
-    definitionInput.value = definitions[normalize(currentWord)] || "";
-    editArea.classList.toggle("visible");
-    if (editArea.classList.contains("visible")) {
-      definitionInput.focus();
-    }
-  }
-
-  function saveDefinition() {
-    if (!currentWord) return;
-
-    const newDefinition = definitionInput.value.trim();
-    if (!newDefinition) {
-      alert("Please enter a definition first.");
-      return;
-    }
-
-    definitions[normalize(currentWord)] = newDefinition;
-    definitionText.textContent = newDefinition;
-    editArea.classList.remove("visible");
-  }
-
-  function cancelEdit() {
-    editArea.classList.remove("visible");
-  }
-
-  function makeDraggable(card) {
-    let startX = 0;
-    let startY = 0;
-    let originalLeft = 0;
-    let originalTop = 0;
-
-    card.addEventListener("pointerdown", function(event) {
-      if (event.button !== undefined && event.button !== 0) return;
-
-      // Do not prevent double-click events from firing.
-      startX = event.clientX;
-      startY = event.clientY;
-
-      const boardRect = board.getBoundingClientRect();
-      const cardRect = card.getBoundingClientRect();
-
-      originalLeft = cardRect.left - boardRect.left;
-      originalTop = cardRect.top - boardRect.top;
-
-      card.classList.add("dragging");
-      card.style.zIndex = 1000;
-
-      card.setPointerCapture(event.pointerId);
-    });
-
-    card.addEventListener("pointermove", function(event) {
-      if (!card.classList.contains("dragging")) return;
-
-      const deltaX = event.clientX - startX;
-      const deltaY = event.clientY - startY;
-
-      let newLeft = originalLeft + deltaX;
-      let newTop = originalTop + deltaY;
-
-      const maxLeft = Math.max(0, board.clientWidth - card.offsetWidth);
-      const maxTop = Math.max(0, board.clientHeight - card.offsetHeight);
-
-      newLeft = Math.max(0, Math.min(newLeft, maxLeft));
-      newTop = Math.max(0, Math.min(newTop, maxTop));
-
-      card.style.left = newLeft + "px";
-      card.style.top = newTop + "px";
-    });
-
-    function stopDragging() {
-      if (!card.classList.contains("dragging")) return;
-
-      card.classList.remove("dragging");
-      card.style.zIndex = "";
-      fitBoardHeight();
-    }
-
-    card.addEventListener("pointerup", stopDragging);
-    card.addEventListener("pointercancel", stopDragging);
-  }
-
-  function arrangeCards() {
-    const cards = Array.from(board.querySelectorAll(".word-card"));
-    const gap = 15;
-    let x = gap;
-    let y = gap;
-    let rowHeight = 0;
-
-    cards.forEach(card => {
-      const cardWidth = card.offsetWidth;
-      const cardHeight = card.offsetHeight;
-
-      if (x + cardWidth > board.clientWidth - gap) {
-        x = gap;
-        y += rowHeight + gap;
-        rowHeight = 0;
-      }
-
+    if (x + cardWidth + gap > boardWidth && x > 18) {
+      x = 18;
+      y += rowHeight + gap;
+      rowHeight = 100;
       card.style.left = x + "px";
       card.style.top = y + "px";
+    }
 
-      x += cardWidth + gap;
-      rowHeight = Math.max(rowHeight, cardHeight);
-    });
+    rowHeight = Math.max(rowHeight, cardHeight);
+    x += card.offsetWidth + gap;
+  });
 
-    fitBoardHeight();
-  }
+  // Ensure the board is tall enough for all rows.
+  const lowest = [...board.children].reduce((max, card) =>
+    Math.max(max, card.offsetTop + card.offsetHeight + 30), 600);
+  board.style.minHeight = lowest + "px";
+}
 
-  function fitBoardHeight() {
-    const cards = Array.from(board.querySelectorAll(".word-card"));
-    let lowestPoint = 650;
+document.getElementById("createBtn").addEventListener("click", createCards);
 
-    cards.forEach(card => {
-      const bottom = parseFloat(card.style.top || 0) + card.offsetHeight;
-      lowestPoint = Math.max(lowestPoint, bottom + 30);
-    });
+document.getElementById("clearBtn").addEventListener("click", function() {
+  board.innerHTML = "";
+  selectedCard = null;
+  definitionWord.textContent = "Choose a word";
+  definitionText.textContent = "Your board is clear. Create cards when you are ready.";
+});
 
-    board.style.minHeight = lowestPoint + "px";
-  }
+window.addEventListener("resize", function() {
+  // Keep existing card positions so manually grouped words stay in place.
+});
 
-  function clearBoard() {
-    board.innerHTML = "";
-    wordInput.value = "";
-    board.style.minHeight = "650px";
-    closeDefinition();
-  }
-
-  window.addEventListener("resize", fitBoardHeight);
+createCards();
 </script>
 </body>
 </html>
