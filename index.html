@@ -1,0 +1,677 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pastel Word Sorting Board</title>
+
+<style>
+:root {
+  --ink: #39445c;
+  --pink: #ffe1eb;
+  --blue: #dceeff;
+  --yellow: #fff1bd;
+  --green: #ddf5e6;
+  --purple: #eee3ff;
+  --peach: #ffe7d6;
+  --white: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 22px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f7f8ff;
+  color: var(--ink);
+}
+
+button, input, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 17px;
+  font-weight: 700;
+  transition: transform .15s, opacity .15s;
+}
+
+button:hover { transform: translateY(-1px); }
+button:focus-visible, input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #8b9cf5;
+  outline-offset: 2px;
+}
+
+header {
+  text-align: center;
+  margin: 0 auto 24px;
+}
+
+header h1 {
+  font-size: clamp(28px, 4vw, 43px);
+  margin: 8px 0;
+  color: #545b91;
+}
+
+header p {
+  font-size: 16px;
+  color: #707a94;
+  margin: 8px 0;
+}
+
+.panel {
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 5px 18px #65719a12;
+  border: 1px solid #ececf7;
+}
+
+.panel h2 {
+  font-size: 21px;
+  margin: 0 0 12px;
+}
+
+#wordInput {
+  width: 100%;
+  min-height: 105px;
+  padding: 14px;
+  border: 2px solid #e5e6f5;
+  border-radius: 15px;
+  resize: vertical;
+  color: var(--ink);
+  background: #fcfcff;
+  line-height: 1.6;
+}
+
+#wordInput::placeholder {
+  color: #a0a6b9;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.primary { background: #dcdfff; color: #454c86; }
+.pink-btn { background: #ffe1eb; color: #914968; }
+.green-btn { background: #ddf5e6; color: #32694b; }
+.yellow-btn { background: #fff1bd; color: #775c18; }
+.gray-btn { background: #eef0f7; color: #555e75; }
+
+.small-note {
+  font-size: 13px;
+  color: #8089a0;
+  margin-top: 10px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+.category {
+  min-width: 0;
+  background: white;
+  border: 2px solid #e8e9f5;
+  border-radius: 23px;
+  overflow: hidden;
+  box-shadow: 0 5px 16px #65719a0c;
+}
+
+.category-header {
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-title {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-weight: 800;
+  font-size: 19px;
+  color: #39445c;
+  padding: 8px 5px;
+}
+
+.category-title::placeholder { color: #7b8191; }
+
+.category-count {
+  min-width: 31px;
+  text-align: center;
+  background: #ffffffc9;
+  padding: 7px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.delete-category {
+  padding: 7px 10px;
+  background: #ffffffb8;
+  color: #8b6471;
+  font-size: 16px;
+}
+
+.category-body {
+  padding: 13px;
+  min-height: 170px;
+  border-top: 1px solid #ffffffc9;
+  transition: background .15s;
+}
+
+.category-body.drag-over {
+  background: #f0efff;
+  outline: 3px dashed #aaa9e9;
+  outline-offset: -5px;
+}
+
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-content: flex-start;
+}
+
+.word {
+  padding: 12px 15px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.3;
+  color: #3d4660;
+  border: 2px solid #ffffff;
+  box-shadow: 0 3px 7px #43506b12;
+  cursor: grab;
+  user-select: none;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  touch-action: manipulation;
+}
+
+.word:hover {
+  filter: brightness(.98);
+  box-shadow: 0 5px 12px #43506b20;
+}
+
+.word:active { cursor: grabbing; }
+
+.word.dragging { opacity: .35; }
+
+.word:focus-visible {
+  outline: 3px solid #818eea;
+}
+
+.word.selected {
+  outline: 3px solid #777fe3;
+  outline-offset: 2px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #9ba2b4;
+  padding: 27px 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+#bank .category-header { background: #e8eaff; }
+#bank .category-body { background: #fafaff; }
+
+#bank {
+  margin-bottom: 22px;
+}
+
+#bank .category-body { min-height: 130px; }
+
+.status {
+  font-size: 14px;
+  color: #7b849a;
+  margin-left: auto;
+}
+
+.footer {
+  text-align: center;
+  color: #a0a6b7;
+  font-size: 12px;
+  padding: 22px 0 8px;
+}
+
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  .panel { padding: 15px; }
+  #board { grid-template-columns: 1fr; }
+  .toolbar button { flex: 1 1 auto; }
+  .status { width: 100%; margin-left: 0; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌈 Word Sorting Board</h1>
+  <p>Read it. Think about it. Sort it!</p>
+</header>
+
+<section class="panel">
+  <h2>✏️ 1. Add Your Vocabulary</h2>
+
+  <textarea id="wordInput"
+    placeholder="Paste your words here...
+
+pollution
+energy
+flood
+natural resources
+recycle"></textarea>
+
+  <div class="toolbar">
+    <button class="primary" id="addWords">＋ Add Words</button>
+    <button class="green-btn" id="addCategory">＋ Add Category</button>
+    <button class="gray-btn" id="clearInput">Clear Text</button>
+    <span class="status" id="status" aria-live="polite">Ready to begin!</span>
+  </div>
+
+  <div class="small-note">
+    Tip: Put each word or phrase on a new line, or separate them with commas.
+    Duplicate words are allowed.
+  </div>
+</section>
+
+<section id="bank" class="category">
+  <div class="category-header">
+    <input class="category-title"
+      value="Word Bank"
+      aria-label="Word Bank heading"
+      readonly>
+    <span class="category-count" id="bankCount">0</span>
+  </div>
+  <div class="category-body drop-zone" data-zone="bank">
+    <div class="words" id="bankWords"></div>
+    <div class="empty-message" id="bankEmpty">
+      Your new words will appear here.<br>
+      Drag them into the correct categories!
+    </div>
+  </div>
+</section>
+
+<div id="board" aria-label="Vocabulary categories"></div>
+
+<div class="toolbar" style="justify-content:center; margin-top:24px">
+  <button class="pink-btn" id="resetBoard">↻ Start New Activity</button>
+  <button class="yellow-btn" id="printBoard">▤ Print Board</button>
+</div>
+
+<div class="footer">
+  Pastel Word Sorting Board · Made for learning
+</div>
+
+<script>
+const pastelColors = [
+  "#FFE1EB",
+  "#DCEEFF",
+  "#FFF1BD",
+  "#DDF5E6",
+  "#EEE3FF",
+  "#FFE7D6",
+  "#DDF5F4",
+  "#F7E2F8"
+];
+
+let nextWordId = 1;
+let nextCategoryId = 1;
+let dragWordId = null;
+let selectedWordId = null;
+
+const words = new Map();
+const categories = new Map();
+
+const board = document.getElementById("board");
+const bankWords = document.getElementById("bankWords");
+const bankEmpty = document.getElementById("bankEmpty");
+const bankCount = document.getElementById("bankCount");
+const status = document.getElementById("status");
+
+function say(message) {
+  status.textContent = message;
+}
+
+function getZoneWords(zone) {
+  return [...words.values()].filter(word => word.zone === zone);
+}
+
+function addWord(text, zone = "bank") {
+  text = text.trim();
+  if (!text) return;
+
+  const id = "word-" + nextWordId++;
+
+  words.set(id, {
+    id,
+    text,
+    zone,
+    color: pastelColors[(nextWordId - 2) % pastelColors.length]
+  });
+
+  return id;
+}
+
+function addWordsFromInput() {
+  const input = document.getElementById("wordInput").value.trim();
+
+  if (!input) {
+    say("Please enter some words first.");
+    return;
+  }
+
+  const items = input
+    .split(/[\n,;]+/)
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  items.forEach(item => addWord(item));
+
+  document.getElementById("wordInput").value = "";
+  render();
+  say(items.length + " word(s) added!");
+}
+
+function addCategory(name = "") {
+  const id = "category-" + nextCategoryId++;
+
+  categories.set(id, {
+    id,
+    name: name || "New Category",
+    color: pastelColors[(nextCategoryId - 2) % pastelColors.length]
+  });
+
+  render();
+
+  // Focus the new heading so the teacher can rename it immediately.
+  const heading = document.querySelector(
+    '[data-category-title="' + id + '"]'
+  );
+
+  if (heading) {
+    heading.focus();
+    heading.select();
+  }
+
+  say("Category added. Type a heading.");
+}
+
+function moveWord(wordId, zone) {
+  const word = words.get(wordId);
+  if (!word) return;
+
+  if (zone !== "bank" && !categories.has(zone)) return;
+
+  word.zone = zone;
+  selectedWordId = null;
+  render();
+}
+
+function renderWord(word) {
+  const el = document.createElement("div");
+  el.className = "word";
+  el.draggable = true;
+  el.tabIndex = 0;
+  el.textContent = word.text;
+  el.style.background = word.color;
+  el.dataset.wordId = word.id;
+  el.setAttribute("role", "button");
+  el.setAttribute("aria-label", word.text +
+    ". Drag to a category, or select and choose a destination.");
+
+  if (selectedWordId === word.id) {
+    el.classList.add("selected");
+  }
+
+  el.addEventListener("dragstart", event => {
+    dragWordId = word.id;
+    event.dataTransfer.setData("text/plain", word.id);
+    event.dataTransfer.effectAllowed = "move";
+    el.classList.add("dragging");
+  });
+
+  el.addEventListener("dragend", () => {
+    dragWordId = null;
+    document.querySelectorAll(".drag-over").forEach(zone =>
+      zone.classList.remove("drag-over")
+    );
+    el.classList.remove("dragging");
+  });
+
+  // Keyboard/touch-friendly alternative: select a word, then choose
+  // a destination from the category's Move selected word button.
+  el.addEventListener("click", () => {
+    selectedWordId = selectedWordId === word.id ? null : word.id;
+    render();
+    if (selectedWordId) {
+      say('Selected "' + word.text + '". Choose a destination below.');
+    } else {
+      say("Word selection cleared.");
+    }
+  });
+
+  el.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectedWordId = word.id;
+      render();
+      say('Selected "' + word.text + '". Choose a destination below.');
+    }
+  });
+
+  return el;
+}
+
+function setupDropZone(zoneElement, zoneId) {
+  zoneElement.addEventListener("dragover", event => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    zoneElement.classList.add("drag-over");
+  });
+
+  zoneElement.addEventListener("dragleave", event => {
+    if (!zoneElement.contains(event.relatedTarget)) {
+      zoneElement.classList.remove("drag-over");
+    }
+  });
+
+  zoneElement.addEventListener("drop", event => {
+    event.preventDefault();
+    zoneElement.classList.remove("drag-over");
+
+    const id = event.dataTransfer.getData("text/plain") || dragWordId;
+    if (id && words.has(id)) {
+      moveWord(id, zoneId);
+      say("Word moved successfully!");
+    }
+  });
+}
+
+function renderCategory(category) {
+  const section = document.createElement("section");
+  section.className = "category";
+
+  const header = document.createElement("div");
+  header.className = "category-header";
+  header.style.background = category.color;
+
+  const title = document.createElement("input");
+  title.className = "category-title";
+  title.value = category.name;
+  title.placeholder = "Type category name";
+  title.setAttribute("aria-label", "Category name");
+  title.dataset.categoryTitle = category.id;
+
+  title.addEventListener("input", () => {
+    category.name = title.value;
+  });
+
+  title.addEventListener("change", () => {
+    category.name = title.value.trim() || "New Category";
+    title.value = category.name;
+  });
+
+  const count = document.createElement("span");
+  count.className = "category-count";
+  count.textContent = getZoneWords(category.id).length;
+
+  const remove = document.createElement("button");
+  remove.className = "delete-category";
+  remove.textContent = "×";
+  remove.title = "Delete category and return its words to the bank";
+  remove.setAttribute("aria-label", "Delete category");
+
+  remove.addEventListener("click", () => {
+    const moved = getZoneWords(category.id).length;
+
+    if (!confirm(
+      'Delete "' + category.name + '"? Its ' + moved +
+      ' word(s) will return to the Word Bank.'
+    )) return;
+
+    getZoneWords(category.id).forEach(word => word.zone = "bank");
+    categories.delete(category.id);
+    render();
+    say("Category deleted. Its words returned to the bank.");
+  });
+
+  header.append(title, count, remove);
+
+  const body = document.createElement("div");
+  body.className = "category-body drop-zone";
+  body.dataset.zone = category.id;
+
+  const list = document.createElement("div");
+  list.className = "words";
+
+  const categoryWords = getZoneWords(category.id);
+  categoryWords.forEach(word => list.appendChild(renderWord(word)));
+
+  const empty = document.createElement("div");
+  empty.className = "empty-message";
+  empty.textContent = categoryWords.length
+    ? ""
+    : "Drop words here!";
+
+  const moveSelected = document.createElement("button");
+  moveSelected.className = "gray-btn";
+  moveSelected.style.marginTop = "12px";
+  moveSelected.style.width = "100%";
+  moveSelected.textContent = "Move selected word here";
+  moveSelected.disabled = !selectedWordId ||
+    !words.has(selectedWordId) ||
+    words.get(selectedWordId).zone === category.id;
+  moveSelected.style.opacity = moveSelected.disabled ? ".5" : "1";
+
+  moveSelected.addEventListener("click", () => {
+    if (selectedWordId && words.has(selectedWordId)) {
+      moveWord(selectedWordId, category.id);
+      say("Word moved to " + category.name + ".");
+    }
+  });
+
+  body.append(list, empty, moveSelected);
+  setupDropZone(body, category.id);
+
+  section.append(header, body);
+  return section;
+}
+
+function render() {
+  bankWords.replaceChildren();
+
+  const unassigned = getZoneWords("bank");
+  unassigned.forEach(word => bankWords.appendChild(renderWord(word)));
+
+  bankCount.textContent = unassigned.length;
+  bankEmpty.style.display = unassigned.length ? "none" : "block";
+
+  board.replaceChildren();
+
+  categories.forEach(category => {
+    board.appendChild(renderCategory(category));
+  });
+
+  setupDropZone(document.querySelector("#bank .drop-zone"), "bank");
+}
+
+document.getElementById("addWords")
+  .addEventListener("click", addWordsFromInput);
+
+document.getElementById("wordInput")
+  .addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) &&
+        event.key === "Enter") {
+      addWordsFromInput();
+    }
+  });
+
+document.getElementById("addCategory")
+  .addEventListener("click", () => addCategory());
+
+document.getElementById("clearInput")
+  .addEventListener("click", () => {
+    document.getElementById("wordInput").value = "";
+    say("Text box cleared.");
+  });
+
+document.getElementById("resetBoard")
+  .addEventListener("click", () => {
+    if (!confirm(
+      "Start a new activity? All words and categories will be removed."
+    )) return;
+
+    words.clear();
+    categories.clear();
+    selectedWordId = null;
+    nextWordId = 1;
+    nextCategoryId = 1;
+    document.getElementById("wordInput").value = "";
+    render();
+    say("Ready for a new activity!");
+  });
+
+document.getElementById("printBoard")
+  .addEventListener("click", () => window.print());
+
+// Start with three editable categories.
+addCategory("Category 1");
+addCategory("Category 2");
+addCategory("Category 3");
+render();
+</script>
+
+<style>
+@media print {
+  body { background: white; padding: 0; }
+  .panel, .footer, #resetBoard, #printBoard,
+  .delete-category, .category-body button { display: none !important; }
+  #board { grid-template-columns: repeat(3, 1fr); }
+  .category { break-inside: avoid; box-shadow: none; }
+  .category-body { display: block !important; }
+  .word { break-inside: avoid; }
+}
+</style>
+
+</body>
+</html>
