@@ -4,175 +4,433 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pastel Word Cards</title>
+<title>Connected Word Groups</title>
 <style>
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  padding: 24px;
   font-family: Arial, sans-serif;
   background: #f8f7ff;
   color: #414660;
 }
 
-h1 {
-  text-align: center;
-  font-size: clamp(28px, 4vw, 44px);
-  color: #7774b9;
-  margin: 8px 0;
-}
+header { text-align: center; padding: 15px; }
+h1 { color: #7774b9; margin: 5px; font-size: clamp(26px,4vw,40px); }
+header p { color: #8589a1; margin: 8px; }
 
-p {
-  text-align: center;
-  color: #888ba4;
-  margin-bottom: 24px;
+.controls {
+  margin: 0 14px 12px;
+  padding: 14px;
+  border-radius: 18px;
+  background: white;
+  border: 1px solid #e8e4fa;
 }
 
 textarea {
   width: 100%;
-  min-height: 110px;
-  padding: 16px;
+  height: 75px;
+  padding: 12px;
   border: 2px solid #e4e0fa;
-  border-radius: 18px;
-  font-size: 17px;
-  resize: vertical;
-  background: white;
-  color: #414660;
+  border-radius: 13px;
+  font: inherit;
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin: 12px 0 24px;
-}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
 
 button {
-  padding: 13px 20px;
-  border: none;
-  border-radius: 14px;
-  background: #e4ddff;
-  color: #514b80;
-  font-size: 16px;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 15px;
   font-weight: bold;
+  color: #514b80;
+  background: #e4ddff;
   cursor: pointer;
 }
 
-button:hover { filter: brightness(.97); }
+#status { font-size: 13px; color: #8589a1; margin-top: 9px; }
 
-#wordCount {
-  align-self: center;
-  margin-left: auto;
-  color: #8589a1;
-}
-
-#wordBoard {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 16px;
+#board {
+  margin: 0 14px 14px;
+  position: relative;
+  height: calc(100vh - 245px);
+  min-height: 400px;
+  overflow: auto;
+  border: 2px dashed #dcd8f2;
+  border-radius: 20px;
+  background-color: white;
+  background-image: radial-gradient(#e7e3f5 1px, transparent 1px);
+  background-size: 22px 22px;
 }
 
 .word {
+  position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 75px;
-  padding: 18px 25px;
-  border-radius: 22px;
-  border: 3px solid white;
-  box-shadow: 0 4px 12px #55557712;
-  font-size: clamp(19px, 2.2vw, 28px);
+  min-height: 62px;
+  max-width: 240px;
+  padding: 14px 20px;
+  border: 2px solid white;
+  border-radius: 18px;
+  font-size: clamp(18px,2vw,25px);
   font-weight: bold;
   text-align: center;
   overflow-wrap: anywhere;
-  max-width: 100%;
+  user-select: none;
+  touch-action: none;
+  cursor: grab;
+  box-shadow: 0 3px 10px #41466014;
 }
 
-@media (max-width: 600px) {
-  body { padding: 14px; }
-  #wordCount { width: 100%; margin-left: 0; }
-  .word { min-height: 60px; padding: 14px 18px; }
+.word.dragging {
+  z-index: 10000 !important;
+  cursor: grabbing;
+  box-shadow: 0 8px 22px #41466030;
+}
+
+.word.connected {
+  border-color: #a6a1d8;
+  box-shadow: 0 0 0 1px #a6a1d833;
+}
+
+@media(max-width:600px) {
+  .controls { margin: 0 8px 10px; }
+  #board { margin: 0 8px 10px; height: 65vh; }
+  .word { max-width: 180px; padding: 11px 14px; }
 }
 
 @media print {
-  body { background: white; }
-  textarea, .toolbar, p { display: none; }
-  .word { break-inside: avoid; }
+  .controls, header p { display: none; }
+  #board { height: auto; min-height: 500px; overflow: visible; }
 }
 </style>
 </head>
-
 <body>
 
-<h1>🌈 Word Cards</h1>
-<p>Paste your vocabulary and create your colorful word board!</p>
+<header>
+  <h1>🌈 Connected Word Groups</h1>
+  <p>Drag words together to group them. Drag a group to move it.</p>
+</header>
 
-<textarea id="inputWords"
-placeholder="Paste your words here, one word per line...
+<section class="controls">
+  <textarea id="wordInput"
+    placeholder="Paste words, one per line...&#10;air&#10;pollution&#10;water&#10;energy"></textarea>
+  <div class="actions">
+    <button id="create">＋ Create Word Cards</button>
+    <button id="arrange">Arrange Cards</button>
+    <button id="reset">Clear Board</button>
+    <button id="print">Print</button>
+  </div>
+  <div id="status">Touching boxes connect automatically. Drag a box away to separate it.</div>
+</section>
 
-pollution
-energy
-flood
-recycle
-natural resources"></textarea>
-
-<div class="toolbar">
-  <button onclick="createCards()">✨ Create Word Cards</button>
-  <button onclick="document.getElementById('inputWords').value=''">
-    Clear Text
-  </button>
-  <button onclick="clearCards()">Clear Board</button>
-  <button onclick="window.print()">Print</button>
-  <span id="wordCount">0 words</span>
-</div>
-
-<div id="wordBoard"></div>
+<main id="board"></main>
 
 <script>
+const board = document.getElementById("board");
+const input = document.getElementById("wordInput");
+const status = document.getElementById("status");
+
 const colors = [
-  "#FFE1EB",
-  "#DCEEFF",
-  "#FFF1BD",
-  "#DDF5E6",
-  "#EEE3FF",
-  "#FFE7D6",
-  "#DDF5F4",
-  "#F7E2F8"
+  "#FFE1EB", "#DCEEFF", "#FFF1BD", "#DDF5E6",
+  "#EEE3FF", "#FFE7D6", "#DDF5F4", "#F7E2F8"
 ];
 
-function createCards() {
-  const input = document.getElementById("inputWords").value;
+let nextId = 1;
+let topZ = 1;
+let groups = new Map();
+let drag = null;
+let groupCounter = 1;
 
-  // Accept one word per line, or comma/semicolon-separated lists.
-  const items = input
-    .split(/[\n,;]+/)
-    .map(word => word.trim())
-    .filter(word => word.length > 0);
+function say(text) { status.textContent = text; }
 
-  const board = document.getElementById("wordBoard");
+function newGroup() {
+  const id = "g" + groupCounter++;
+  groups.set(id, new Set());
+  return id;
+}
 
-  items.forEach(word => {
-    const card = document.createElement("div");
-    card.className = "word";
-    card.textContent = word;
-    card.style.backgroundColor =
-      colors[board.children.length % colors.length];
+function cards() {
+  return [...board.querySelectorAll(".word")];
+}
 
-    board.appendChild(card);
+function groupCards(groupId) {
+  return cards().filter(card => card.dataset.group === groupId);
+}
+
+function cardRect(card) {
+  return {
+    x: parseFloat(card.style.left) || 0,
+    y: parseFloat(card.style.top) || 0,
+    w: card.offsetWidth,
+    h: card.offsetHeight
+  };
+}
+
+function touching(a, b) {
+  const A = cardRect(a), B = cardRect(b);
+  const tolerance = 2;
+  return A.x < B.x + B.w - tolerance &&
+    A.x + A.w > B.x + tolerance &&
+    A.y < B.y + B.h - tolerance &&
+    A.y + A.h > B.y + tolerance;
+}
+
+function setGroup(card, groupId) {
+  card.dataset.group = groupId;
+}
+
+function connectGroups(groupA, groupB) {
+  if (!groupA || !groupB || groupA === groupB) return false;
+
+  const membersA = groupCards(groupA);
+  const membersB = groupCards(groupB);
+  if (!membersA.length || !membersB.length) return false;
+
+  // Keep the first group and add the second group's cards.
+  membersB.forEach(card => setGroup(card, groupA));
+  groups.delete(groupB);
+  updateConnections();
+  return true;
+}
+
+function updateConnections() {
+  const all = cards();
+
+  all.forEach(card => card.classList.remove("connected"));
+
+  // Any touching cards join the same group, including indirect connections.
+  let changed = true;
+  let safety = 0;
+
+  while (changed && safety++ < 1000) {
+    changed = false;
+
+    outer:
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const a = all[i], b = all[j];
+
+        if (a.dataset.group !== b.dataset.group && touching(a, b)) {
+          connectGroups(a.dataset.group, b.dataset.group);
+          changed = true;
+          break outer;
+        }
+      }
+    }
+  }
+
+  const members = new Map();
+  all.forEach(card => {
+    if (!members.has(card.dataset.group)) {
+      members.set(card.dataset.group, []);
+    }
+    members.get(card.dataset.group).push(card);
   });
 
-  document.getElementById("wordCount").textContent =
-    board.children.length + " words";
+  members.forEach(list => {
+    if (list.length > 1) {
+      list.forEach(card => card.classList.add("connected"));
+    }
+  });
 }
 
-function clearCards() {
-  document.getElementById("wordBoard").replaceChildren();
-  document.getElementById("wordCount").textContent = "0 words";
+function makeCard(text, x, y) {
+  const card = document.createElement("div");
+  card.className = "word";
+  card.textContent = text;
+  card.dataset.id = String(nextId++);
+  card.style.background = colors[(Number(card.dataset.id) - 1) % colors.length];
+  card.style.left = x + "px";
+  card.style.top = y + "px";
+  card.style.zIndex = String(++topZ);
+
+  const group = newGroup();
+  setGroup(card, group);
+
+  card.addEventListener("pointerdown", startDrag);
+  board.appendChild(card);
+
+  card.style.left = Math.max(0, Math.min(x,
+    board.clientWidth - card.offsetWidth)) + "px";
+
+  return card;
 }
+
+function createCards() {
+  const list = input.value.split(/[\n,;]+/)
+    .map(s => s.trim()).filter(Boolean);
+
+  if (!list.length) {
+    say("Paste some words first.");
+    return;
+  }
+
+  let x = 15, y = 15, rowHeight = 0;
+  const gap = 18;
+
+  list.forEach(text => {
+    const card = makeCard(text, x, y);
+
+    if (x + card.offsetWidth > board.clientWidth - 10) {
+      x = 15;
+      y += rowHeight + gap;
+      rowHeight = 0;
+      card.style.left = x + "px";
+      card.style.top = y + "px";
+    }
+
+    x += card.offsetWidth + gap;
+    rowHeight = Math.max(rowHeight, card.offsetHeight);
+  });
+
+  input.value = "";
+  updateConnections();
+  updateBoardHeight();
+  say(list.length + " cards created.");
+}
+
+function startDrag(event) {
+  if (event.button !== undefined && event.button !== 0) return;
+
+  const card = event.currentTarget;
+  const groupId = card.dataset.group;
+  const group = groupCards(groupId);
+  const rect = board.getBoundingClientRect();
+
+  drag = {
+    card,
+    groupId,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    boardX: event.clientX - rect.left + board.scrollLeft,
+    boardY: event.clientY - rect.top + board.scrollTop,
+    offsets: group.map(member => ({
+      card: member,
+      x: parseFloat(member.style.left) || 0,
+      y: parseFloat(member.style.top) || 0
+    }))
+  };
+
+  group.forEach(member => {
+    member.style.zIndex = String(++topZ);
+    member.classList.add("dragging");
+  });
+
+  card.setPointerCapture(event.pointerId);
+  card.addEventListener("pointermove", moveDrag);
+  card.addEventListener("pointerup", endDrag);
+  card.addEventListener("pointercancel", endDrag);
+  event.preventDefault();
+}
+
+function moveDrag(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+
+  const rect = board.getBoundingClientRect();
+  const currentX = event.clientX - rect.left + board.scrollLeft;
+  const currentY = event.clientY - rect.top + board.scrollTop;
+  const dx = currentX - drag.boardX;
+  const dy = currentY - drag.boardY;
+
+  drag.offsets.forEach(item => {
+    item.card.style.left = Math.max(0, item.x + dx) + "px";
+    item.card.style.top = Math.max(0, item.y + dy) + "px";
+  });
+}
+
+function endDrag(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+
+  const current = drag;
+  current.card.removeEventListener("pointermove", moveDrag);
+  current.card.removeEventListener("pointerup", endDrag);
+  current.card.removeEventListener("pointercancel", endDrag);
+
+  cards().forEach(card => card.classList.remove("dragging"));
+
+  // If a member is pulled away from the rest of its group,
+  // it becomes its own independent group.
+  const moving = current.offsets.map(item => item.card);
+  const remaining = groupCards(current.groupId)
+    .filter(card => !moving.includes(card));
+
+  if (remaining.length === 0) {
+    // A whole group was moved; check whether it touched another group.
+    updateConnections();
+  } else {
+    moving.forEach(card => {
+      const touchingRemaining = remaining.some(other => touching(card, other));
+
+      if (!touchingRemaining) {
+        const id = newGroup();
+        setGroup(card, id);
+      }
+    });
+
+    updateConnections();
+  }
+
+  drag = null;
+  updateBoardHeight();
+  say("Groups updated. Touching cards connect automatically.");
+}
+
+function updateBoardHeight() {
+  let bottom = 0;
+  cards().forEach(card => {
+    bottom = Math.max(bottom,
+      (parseFloat(card.style.top) || 0) + card.offsetHeight + 30);
+  });
+
+  board.style.height = Math.max(
+    window.innerHeight * 0.62, bottom
+  ) + "px";
+}
+
+document.getElementById("create").addEventListener("click", createCards);
+
+input.addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    createCards();
+  }
+});
+
+document.getElementById("arrange").addEventListener("click", () => {
+  let x = 15, y = 15, rowHeight = 0;
+  const gap = 18;
+
+  cards().forEach(card => {
+    if (x + card.offsetWidth > board.clientWidth - 10) {
+      x = 15;
+      y += rowHeight + gap;
+      rowHeight = 0;
+    }
+
+    card.style.left = x + "px";
+    card.style.top = y + "px";
+    x += card.offsetWidth + gap;
+    rowHeight = Math.max(rowHeight, card.offsetHeight);
+  });
+
+  updateConnections();
+  updateBoardHeight();
+  say("Cards arranged. Drag to build groups.");
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  board.replaceChildren();
+  groups.clear();
+  nextId = 1;
+  groupCounter = 1;
+  topZ = 1;
+  board.style.height = "";
+  say("Board cleared. Paste a new list.");
+});
+
+document.getElementById("print").addEventListener("click", () => window.print());
 </script>
-
 </body>
 </html>
