@@ -4,21 +4,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Connected Word Groups</title>
+<title>Magnetic Word Board</title>
 <style>
 * { box-sizing: border-box; }
-
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f8f7ff;
   color: #414660;
 }
-
-header { text-align: center; padding: 15px; }
+header { text-align: center; padding: 14px; }
 h1 { color: #7774b9; margin: 5px; font-size: clamp(26px,4vw,40px); }
 header p { color: #8589a1; margin: 8px; }
-
 .controls {
   margin: 0 14px 12px;
   padding: 14px;
@@ -26,105 +23,63 @@ header p { color: #8589a1; margin: 8px; }
   background: white;
   border: 1px solid #e8e4fa;
 }
-
 textarea {
-  width: 100%;
-  height: 75px;
-  padding: 12px;
-  border: 2px solid #e4e0fa;
-  border-radius: 13px;
+  width: 100%; height: 75px; padding: 12px;
+  border: 2px solid #e4e0fa; border-radius: 13px;
   font: inherit;
 }
-
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
-
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
 button {
-  border: 0;
-  border-radius: 12px;
-  padding: 11px 15px;
-  font-weight: bold;
-  color: #514b80;
-  background: #e4ddff;
-  cursor: pointer;
+  border:0; border-radius:12px; padding:11px 15px;
+  font-weight:bold; color:#514b80; background:#e4ddff;
+  cursor:pointer;
 }
-
-#status { font-size: 13px; color: #8589a1; margin-top: 9px; }
-
+#status { font-size:13px; color:#8589a1; margin-top:9px; }
 #board {
-  margin: 0 14px 14px;
-  position: relative;
-  height: calc(100vh - 245px);
-  min-height: 400px;
-  overflow: auto;
-  border: 2px dashed #dcd8f2;
-  border-radius: 20px;
-  background-color: white;
-  background-image: radial-gradient(#e7e3f5 1px, transparent 1px);
-  background-size: 22px 22px;
+  margin:0 14px 14px; position:relative;
+  height:calc(100vh - 245px); min-height:400px;
+  overflow:auto; border:2px dashed #dcd8f2;
+  border-radius:20px; background-color:white;
+  background-image:radial-gradient(#e7e3f5 1px,transparent 1px);
+  background-size:22px 22px;
 }
-
 .word {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 62px;
-  max-width: 240px;
-  padding: 14px 20px;
-  border: 2px solid white;
-  border-radius: 18px;
-  font-size: clamp(18px,2vw,25px);
-  font-weight: bold;
-  text-align: center;
-  overflow-wrap: anywhere;
-  user-select: none;
-  touch-action: none;
-  cursor: grab;
-  box-shadow: 0 3px 10px #41466014;
+  position:absolute; display:flex; align-items:center; justify-content:center;
+  min-height:62px; max-width:240px; padding:14px 20px;
+  border:2px solid white; border-radius:18px;
+  font-size:clamp(18px,2vw,25px); font-weight:bold;
+  text-align:center; overflow-wrap:anywhere;
+  user-select:none; touch-action:none; cursor:grab;
+  box-shadow:0 3px 10px #41466014;
 }
-
-.word.dragging {
-  z-index: 10000 !important;
-  cursor: grabbing;
-  box-shadow: 0 8px 22px #41466030;
-}
-
-.word.connected {
-  border-color: #a6a1d8;
-  box-shadow: 0 0 0 1px #a6a1d833;
-}
-
+.word.dragging { z-index:10000!important; cursor:grabbing; box-shadow:0 8px 22px #41466030; }
+.word.connected { border-color:#aaa2df; }
 @media(max-width:600px) {
-  .controls { margin: 0 8px 10px; }
-  #board { margin: 0 8px 10px; height: 65vh; }
-  .word { max-width: 180px; padding: 11px 14px; }
+  .controls { margin:0 8px 10px; }
+  #board { margin:0 8px 10px; height:65vh; }
+  .word { max-width:180px; padding:11px 14px; }
 }
-
 @media print {
-  .controls, header p { display: none; }
-  #board { height: auto; min-height: 500px; overflow: visible; }
+  .controls,header p { display:none; }
+  #board { height:auto; min-height:500px; overflow:visible; }
 }
 </style>
 </head>
 <body>
-
 <header>
-  <h1>🌈 Connected Word Groups</h1>
-  <p>Drag words together to group them. Drag a group to move it.</p>
+  <h1>🌈 Magnetic Word Board</h1>
+  <p>Drag the words together. Connected boxes move as a group.</p>
 </header>
-
 <section class="controls">
-  <textarea id="wordInput"
-    placeholder="Paste words, one per line...&#10;air&#10;pollution&#10;water&#10;energy"></textarea>
+  <textarea id="wordInput" placeholder="Paste words, one per line...&#10;air&#10;pollution&#10;water&#10;energy"></textarea>
   <div class="actions">
     <button id="create">＋ Create Word Cards</button>
     <button id="arrange">Arrange Cards</button>
     <button id="reset">Clear Board</button>
     <button id="print">Print</button>
   </div>
-  <div id="status">Touching boxes connect automatically. Drag a box away to separate it.</div>
+  <div id="status">Bring box edges close together to snap them into a group.</div>
 </section>
-
 <main id="board"></main>
 
 <script>
@@ -133,304 +88,274 @@ const input = document.getElementById("wordInput");
 const status = document.getElementById("status");
 
 const colors = [
-  "#FFE1EB", "#DCEEFF", "#FFF1BD", "#DDF5E6",
-  "#EEE3FF", "#FFE7D6", "#DDF5F4", "#F7E2F8"
+  "#FFE1EB","#DCEEFF","#FFF1BD","#DDF5E6",
+  "#EEE3FF","#FFE7D6","#DDF5F4","#F7E2F8"
 ];
 
+const SNAP = 20; // Magnetic attraction distance in pixels
 let nextId = 1;
 let topZ = 1;
-let groups = new Map();
-let drag = null;
 let groupCounter = 1;
+let drag = null;
 
 function say(text) { status.textContent = text; }
+function cards() { return [...board.querySelectorAll(".word")]; }
 
-function newGroup() {
-  const id = "g" + groupCounter++;
-  groups.set(id, new Set());
-  return id;
+function newGroup() { return "g" + groupCounter++; }
+
+function members(group) {
+  return cards().filter(c => c.dataset.group === group);
 }
 
-function cards() {
-  return [...board.querySelectorAll(".word")];
-}
-
-function groupCards(groupId) {
-  return cards().filter(card => card.dataset.group === groupId);
-}
-
-function cardRect(card) {
+function rect(c) {
   return {
-    x: parseFloat(card.style.left) || 0,
-    y: parseFloat(card.style.top) || 0,
-    w: card.offsetWidth,
-    h: card.offsetHeight
+    x: parseFloat(c.style.left)||0,
+    y: parseFloat(c.style.top)||0,
+    w: c.offsetWidth,
+    h: c.offsetHeight
   };
 }
 
-function touching(a, b) {
-  const A = cardRect(a), B = cardRect(b);
-  const tolerance = 2;
-  return A.x < B.x + B.w - tolerance &&
-    A.x + A.w > B.x + tolerance &&
-    A.y < B.y + B.h - tolerance &&
-    A.y + A.h > B.y + tolerance;
-}
+// Find the magnetic edge connection between two boxes.
+// Boxes snap when parallel edges are close and their
+// perpendicular ranges overlap.
+function findSnap(a, b) {
+  const A = rect(a), B = rect(b);
 
-function setGroup(card, groupId) {
-  card.dataset.group = groupId;
-}
+  const overlapY = Math.min(A.y+A.h, B.y+B.h) -
+                   Math.max(A.y, B.y);
+  const overlapX = Math.min(A.x+A.w, B.x+B.w) -
+                   Math.max(A.x, B.x);
 
-function connectGroups(groupA, groupB) {
-  if (!groupA || !groupB || groupA === groupB) return false;
-
-  const membersA = groupCards(groupA);
-  const membersB = groupCards(groupB);
-  if (!membersA.length || !membersB.length) return false;
-
-  // Keep the first group and add the second group's cards.
-  membersB.forEach(card => setGroup(card, groupA));
-  groups.delete(groupB);
-  updateConnections();
-  return true;
-}
-
-function updateConnections() {
-  const all = cards();
-
-  all.forEach(card => card.classList.remove("connected"));
-
-  // Any touching cards join the same group, including indirect connections.
-  let changed = true;
-  let safety = 0;
-
-  while (changed && safety++ < 1000) {
-    changed = false;
-
-    outer:
-    for (let i = 0; i < all.length; i++) {
-      for (let j = i + 1; j < all.length; j++) {
-        const a = all[i], b = all[j];
-
-        if (a.dataset.group !== b.dataset.group && touching(a, b)) {
-          connectGroups(a.dataset.group, b.dataset.group);
-          changed = true;
-          break outer;
-        }
-      }
-    }
+  if (overlapY > 8) {
+    if (Math.abs((A.x+A.w)-B.x) <= SNAP)
+      return { direction:"left", distance:(A.x+A.w)-B.x };
+    if (Math.abs((B.x+B.w)-A.x) <= SNAP)
+      return { direction:"right", distance:(B.x+B.w)-A.x };
   }
 
-  const members = new Map();
-  all.forEach(card => {
-    if (!members.has(card.dataset.group)) {
-      members.set(card.dataset.group, []);
-    }
-    members.get(card.dataset.group).push(card);
-  });
+  if (overlapX > 8) {
+    if (Math.abs((A.y+A.h)-B.y) <= SNAP)
+      return { direction:"top", distance:(A.y+A.h)-B.y };
+    if (Math.abs((B.y+B.h)-A.y) <= SNAP)
+      return { direction:"bottom", distance:(B.y+B.h)-A.y };
+  }
 
-  members.forEach(list => {
-    if (list.length > 1) {
-      list.forEach(card => card.classList.add("connected"));
-    }
-  });
+  return null;
 }
 
-function makeCard(text, x, y) {
-  const card = document.createElement("div");
-  card.className = "word";
-  card.textContent = text;
-  card.dataset.id = String(nextId++);
-  card.style.background = colors[(Number(card.dataset.id) - 1) % colors.length];
-  card.style.left = x + "px";
-  card.style.top = y + "px";
-  card.style.zIndex = String(++topZ);
+function setPosition(c,x,y) {
+  c.style.left = Math.max(0,x) + "px";
+  c.style.top = Math.max(0,y) + "px";
+}
 
-  const group = newGroup();
-  setGroup(card, group);
-
-  card.addEventListener("pointerdown", startDrag);
-  board.appendChild(card);
-
-  card.style.left = Math.max(0, Math.min(x,
-    board.clientWidth - card.offsetWidth)) + "px";
-
-  return card;
+function makeCard(text,x,y) {
+  const c = document.createElement("div");
+  c.className = "word";
+  c.textContent = text;
+  c.dataset.id = nextId++;
+  c.dataset.group = newGroup();
+  c.style.background = colors[(Number(c.dataset.id)-1)%colors.length];
+  c.style.left = x+"px";
+  c.style.top = y+"px";
+  c.style.zIndex = ++topZ;
+  c.addEventListener("pointerdown",startDrag);
+  board.appendChild(c);
+  setPosition(c,Math.min(x,Math.max(0,board.clientWidth-c.offsetWidth)),y);
+  return c;
 }
 
 function createCards() {
-  const list = input.value.split(/[\n,;]+/)
-    .map(s => s.trim()).filter(Boolean);
+  const list = input.value.split(/[\n,;]+/).map(s=>s.trim()).filter(Boolean);
+  if (!list.length) return say("Paste some words first.");
 
-  if (!list.length) {
-    say("Paste some words first.");
-    return;
-  }
-
-  let x = 15, y = 15, rowHeight = 0;
-  const gap = 18;
-
-  list.forEach(text => {
-    const card = makeCard(text, x, y);
-
-    if (x + card.offsetWidth > board.clientWidth - 10) {
-      x = 15;
-      y += rowHeight + gap;
-      rowHeight = 0;
-      card.style.left = x + "px";
-      card.style.top = y + "px";
+  let x=15,y=15,rowHeight=0;
+  list.forEach(text=>{
+    const c=makeCard(text,x,y);
+    if (x+c.offsetWidth>board.clientWidth-10) {
+      x=15; y+=rowHeight+18; rowHeight=0;
+      setPosition(c,x,y);
     }
-
-    x += card.offsetWidth + gap;
-    rowHeight = Math.max(rowHeight, card.offsetHeight);
+    x+=c.offsetWidth+18;
+    rowHeight=Math.max(rowHeight,c.offsetHeight);
   });
-
-  input.value = "";
-  updateConnections();
+  input.value="";
   updateBoardHeight();
-  say(list.length + " cards created.");
+  say(list.length+" cards created. Bring edges close to snap together.");
 }
 
-function startDrag(event) {
-  if (event.button !== undefined && event.button !== 0) return;
+function startDrag(e) {
+  if (e.button!==undefined && e.button!==0) return;
+  const c=e.currentTarget;
+  const group=c.dataset.group;
+  const r=board.getBoundingClientRect();
 
-  const card = event.currentTarget;
-  const groupId = card.dataset.group;
-  const group = groupCards(groupId);
-  const rect = board.getBoundingClientRect();
-
-  drag = {
-    card,
-    groupId,
-    pointerId: event.pointerId,
-    startX: event.clientX,
-    startY: event.clientY,
-    boardX: event.clientX - rect.left + board.scrollLeft,
-    boardY: event.clientY - rect.top + board.scrollTop,
-    offsets: group.map(member => ({
-      card: member,
-      x: parseFloat(member.style.left) || 0,
-      y: parseFloat(member.style.top) || 0
-    }))
+  drag={
+    card:c, group, pointerId:e.pointerId,
+    startX:e.clientX-r.left+board.scrollLeft,
+    startY:e.clientY-r.top+board.scrollTop,
+    items:members(group).map(m=>({
+      card:m,x:parseFloat(m.style.left)||0,
+      y:parseFloat(m.style.top)||0
+    })),
+    moved:false
   };
 
-  group.forEach(member => {
-    member.style.zIndex = String(++topZ);
-    member.classList.add("dragging");
+  drag.items.forEach(item=>{
+    item.card.classList.add("dragging");
+    item.card.style.zIndex=++topZ;
   });
 
-  card.setPointerCapture(event.pointerId);
-  card.addEventListener("pointermove", moveDrag);
-  card.addEventListener("pointerup", endDrag);
-  card.addEventListener("pointercancel", endDrag);
-  event.preventDefault();
+  c.setPointerCapture(e.pointerId);
+  c.addEventListener("pointermove",moveDrag);
+  c.addEventListener("pointerup",endDrag);
+  c.addEventListener("pointercancel",endDrag);
+  e.preventDefault();
 }
 
-function moveDrag(event) {
-  if (!drag || event.pointerId !== drag.pointerId) return;
+function moveDrag(e) {
+  if (!drag || e.pointerId!==drag.pointerId) return;
+  const r=board.getBoundingClientRect();
+  const x=e.clientX-r.left+board.scrollLeft;
+  const y=e.clientY-r.top+board.scrollTop;
+  const dx=x-drag.startX, dy=y-drag.startY;
 
-  const rect = board.getBoundingClientRect();
-  const currentX = event.clientX - rect.left + board.scrollLeft;
-  const currentY = event.clientY - rect.top + board.scrollTop;
-  const dx = currentX - drag.boardX;
-  const dy = currentY - drag.boardY;
+  if (Math.abs(dx)+Math.abs(dy)>2) drag.moved=true;
 
-  drag.offsets.forEach(item => {
-    item.card.style.left = Math.max(0, item.x + dx) + "px";
-    item.card.style.top = Math.max(0, item.y + dy) + "px";
-  });
+  drag.items.forEach(item=>setPosition(
+    item.card,item.x+dx,item.y+dy
+  ));
 }
 
-function endDrag(event) {
-  if (!drag || event.pointerId !== drag.pointerId) return;
+// After releasing, detach cards that were pulled away from
+// their former group, then snap to the closest eligible group.
+function endDrag(e) {
+  if (!drag || e.pointerId!==drag.pointerId) return;
 
-  const current = drag;
-  current.card.removeEventListener("pointermove", moveDrag);
-  current.card.removeEventListener("pointerup", endDrag);
-  current.card.removeEventListener("pointercancel", endDrag);
+  const current=drag;
+  const moving=current.items.map(i=>i.card);
 
-  cards().forEach(card => card.classList.remove("dragging"));
+  current.card.removeEventListener("pointermove",moveDrag);
+  current.card.removeEventListener("pointerup",endDrag);
+  current.card.removeEventListener("pointercancel",endDrag);
+  cards().forEach(c=>c.classList.remove("dragging"));
 
-  // If a member is pulled away from the rest of its group,
-  // it becomes its own independent group.
-  const moving = current.offsets.map(item => item.card);
-  const remaining = groupCards(current.groupId)
-    .filter(card => !moving.includes(card));
+  if (current.moved) {
+    // Split moving members from the old group if they no longer
+    // touch any member left behind.
+    const oldMembers=members(current.group).filter(c=>!moving.includes(c));
 
-  if (remaining.length === 0) {
-    // A whole group was moved; check whether it touched another group.
-    updateConnections();
-  } else {
-    moving.forEach(card => {
-      const touchingRemaining = remaining.some(other => touching(card, other));
+    if (oldMembers.length) {
+      const remainingGroups=new Map();
+      moving.forEach(c=>{
+        if (!oldMembers.some(o=>findSnap(c,o))) {
+          c.dataset.group=newGroup();
+        }
+      });
+    }
 
-      if (!touchingRemaining) {
-        const id = newGroup();
-        setGroup(card, id);
+    // Repeatedly snap to nearby cards in other groups.
+    let changed=true, safety=0;
+    while(changed && safety++<100) {
+      changed=false;
+      let best=null, bestDistance=Infinity;
+
+      const all=cards();
+      for (const a of moving) {
+        for (const b of all) {
+          if (moving.includes(b)) continue;
+          const snap=findSnap(a,b);
+          if (snap && a.dataset.group!==b.dataset.group &&
+              Math.abs(snap.distance)<bestDistance) {
+            best={a,b,snap};
+            bestDistance=Math.abs(snap.distance);
+          }
+        }
       }
-    });
 
-    updateConnections();
+      if (best) {
+        applySnap(best.a,best.b,best.snap);
+        changed=true;
+      }
+    }
   }
 
-  drag = null;
+  drag=null;
+  updateConnections();
   updateBoardHeight();
-  say("Groups updated. Touching cards connect automatically.");
+  say("Ready! Drag connected boxes away to separate them.");
+}
+
+function applySnap(a,b,snap) {
+  const A=rect(a), B=rect(b);
+  let dx=0,dy=0;
+
+  if (snap.direction==="left") dx=(B.x-(A.x+A.w));
+  if (snap.direction==="right") dx=(B.x+B.w-A.x);
+  if (snap.direction==="top") dy=(B.y-(A.y+A.h));
+  if (snap.direction==="bottom") dy=(B.y+B.h-A.y);
+
+  // Move the dropped group's members by the same amount,
+  // aligning the two card edges exactly.
+  const movingGroup=a.dataset.group;
+  members(movingGroup).forEach(c=>{
+    setPosition(c,(parseFloat(c.style.left)||0)+dx,
+                  (parseFloat(c.style.top)||0)+dy);
+  });
+
+  const oldGroup=b.dataset.group;
+  members(oldGroup).forEach(c=>c.dataset.group=movingGroup);
+}
+
+function updateConnections() {
+  cards().forEach(c=>c.classList.remove("connected"));
+
+  // Mark all cards in groups with more than one member.
+  const groupIds=[...new Set(cards().map(c=>c.dataset.group))];
+  groupIds.forEach(id=>{
+    const list=members(id);
+    if (list.length>1) list.forEach(c=>c.classList.add("connected"));
+  });
 }
 
 function updateBoardHeight() {
-  let bottom = 0;
-  cards().forEach(card => {
-    bottom = Math.max(bottom,
-      (parseFloat(card.style.top) || 0) + card.offsetHeight + 30);
+  let bottom=0;
+  cards().forEach(c=>{
+    bottom=Math.max(bottom,(parseFloat(c.style.top)||0)+c.offsetHeight+30);
   });
-
-  board.style.height = Math.max(
-    window.innerHeight * 0.62, bottom
-  ) + "px";
+  board.style.height=Math.max(window.innerHeight*.62,bottom)+"px";
 }
 
-document.getElementById("create").addEventListener("click", createCards);
-
-input.addEventListener("keydown", event => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-    createCards();
-  }
+document.getElementById("create").onclick=createCards;
+input.addEventListener("keydown",e=>{
+  if ((e.ctrlKey||e.metaKey)&&e.key==="Enter") createCards();
 });
 
-document.getElementById("arrange").addEventListener("click", () => {
-  let x = 15, y = 15, rowHeight = 0;
-  const gap = 18;
-
-  cards().forEach(card => {
-    if (x + card.offsetWidth > board.clientWidth - 10) {
-      x = 15;
-      y += rowHeight + gap;
-      rowHeight = 0;
+document.getElementById("arrange").onclick=()=>{
+  let x=15,y=15,rowHeight=0;
+  cards().forEach(c=>{
+    if(x+c.offsetWidth>board.clientWidth-10){
+      x=15; y+=rowHeight+18; rowHeight=0;
     }
-
-    card.style.left = x + "px";
-    card.style.top = y + "px";
-    x += card.offsetWidth + gap;
-    rowHeight = Math.max(rowHeight, card.offsetHeight);
+    setPosition(c,x,y);
+    x+=c.offsetWidth+18;
+    rowHeight=Math.max(rowHeight,c.offsetHeight);
   });
-
+  cards().forEach(c=>c.dataset.group=newGroup());
   updateConnections();
   updateBoardHeight();
-  say("Cards arranged. Drag to build groups.");
-});
+  say("Cards arranged. Drag them together to make groups.");
+};
 
-document.getElementById("reset").addEventListener("click", () => {
+document.getElementById("reset").onclick=()=>{
   board.replaceChildren();
-  groups.clear();
-  nextId = 1;
-  groupCounter = 1;
-  topZ = 1;
-  board.style.height = "";
+  nextId=1; groupCounter=1; topZ=1;
+  board.style.height="";
   say("Board cleared. Paste a new list.");
-});
+};
 
-document.getElementById("print").addEventListener("click", () => window.print());
+document.getElementById("print").onclick=()=>window.print();
+window.addEventListener("resize",updateBoardHeight);
 </script>
 </body>
 </html>
